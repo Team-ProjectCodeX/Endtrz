@@ -5,7 +5,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from YourApp import app  # Import your Pyrogram Client
 
 # Publicly visible web server
-UPLOAD_URL = f"https://endtrz.vercel.app/api/upload"
+UPLOAD_URL = "https://endtrz.vercel.app/api/upload"
 
 
 async def upload_to_server(file_path, file_name):
@@ -23,19 +23,23 @@ async def upload_to_server(file_path, file_name):
 
 @app.on_message(filters.command("tgm"))
 async def tgm_handler(_, message: Message):
-    """Reply to a file with /tgm to upload and get link"""
+    """Reply to any message with /tgm to upload and get link"""
     if not message.reply_to_message:
-        return await message.reply_text("⚠️ Please reply to a file to upload.")
+        return await message.reply_text("⚠️ Please reply to a message to upload.")
 
     replied = message.reply_to_message
-    if not (replied.document or replied.photo or replied.video):
-        return await message.reply_text("⚠️ Only documents, photos, or videos are supported.")
+    status = await message.reply_text("⬆️ Uploading content to server...")
 
-    status = await message.reply_text("⬆️ Uploading file to server...")
-
+    file_path = None
     try:
-        # Download the file
-        file_path = await replied.download()
+        # Download media if exists, else save text to temp file
+        if replied.media:
+            file_path = await replied.download()
+        else:
+            file_path = "temp.txt"
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(replied.text or "No text content")
+
         file_name = os.path.basename(file_path)
 
         # Upload to Flask server
@@ -51,21 +55,21 @@ async def tgm_handler(_, message: Message):
 
             # Inline buttons
             buttons = InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("🌍 Open Link", url=file_link)
-                ]
+                [InlineKeyboardButton("🌍 Open Link", url=file_link)]
             ])
 
-            await status.edit_text(
+            await status.edit(
                 caption,
                 reply_markup=buttons,
                 disable_web_page_preview=False
             )
         else:
-            await status.edit_text("❌ Upload failed. Please try again.")
-
-        # Clean up temp file
-        os.remove(file_path)
+            await status.edit("❌ Upload failed. Please try again.")
 
     except Exception as e:
-        await status.edit_text(f"⚠️ Error: {str(e)}")
+        await status.edit(f"⚠️ Error: {str(e)}")
+
+    finally:
+        # Clean up temp file if exists
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
