@@ -4,8 +4,10 @@ from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from YourApp import app  # Import your Pyrogram Client
 
-# Publicly visible web server
-UPLOAD_URL = "https://endtrz.vercel.app/api/upload"
+# UPLOAD URL WITH API KEY
+API_KEY = "" # get you api key from https://endtrz.vercel.app
+
+UPLOAD_URL = f"https://endtrz.vercel.app/api/{API_KEY}/upload"
 
 
 async def upload_to_server(file_path, file_name):
