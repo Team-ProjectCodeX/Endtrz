@@ -5,7 +5,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from YourApp import app  # Import your Pyrogram Client
 
 # UPLOAD URL WITH API KEY
-API_KEY = "" # get you api key from https://endtrz.vercel.app
+API_KEY = "" # get you api key from https://endtrz.vercel.app/user/login
 
 UPLOAD_URL = f"https://endtrz.vercel.app/api/{API_KEY}/upload"
 
